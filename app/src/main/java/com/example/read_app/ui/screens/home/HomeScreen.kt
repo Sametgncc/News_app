@@ -7,10 +7,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.SemanticsProperties.ImeAction
+
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.read_app.ui.components.ArticleCard
+
+
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,10 +41,11 @@ fun HomeScreen(
             }
         )
 
-        // Search alanı (AppBar dışında)
         SearchBarCard(
             query = state.query,
             lastSyncText = state.lastSyncText,
+            language = state.language,
+            onLanguageChange = viewModel::onLanguageChange,
             onQueryChange = viewModel::onQueryChange,
             onSearch = {
                 viewModel.onSearch()
@@ -50,6 +56,7 @@ fun HomeScreen(
                 items.refresh()
             }
         )
+
 
         // Üstte ince progress
         if (state.isRefreshing) {
@@ -118,6 +125,8 @@ fun HomeScreen(
 private fun SearchBarCard(
     query: String,
     lastSyncText: String,
+    language: String,
+    onLanguageChange: (String) -> Unit,
     onQueryChange: (String) -> Unit,
     onSearch: () -> Unit,
     onClear: () -> Unit
@@ -130,12 +139,31 @@ private fun SearchBarCard(
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
 
+            // ✅ Dil seçimi (TR / EN)
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilterChip(
+                    selected = language == "tr",
+                    onClick = { onLanguageChange("tr") },
+                    label = { Text("TR") }
+                )
+                FilterChip(
+                    selected = language == "en",
+                    onClick = { onLanguageChange("en") },
+                    label = { Text("EN") }
+                )
+            }
+
+            Spacer(Modifier.height(10.dp))
+
             OutlinedTextField(
                 value = query,
                 onValueChange = onQueryChange,
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 placeholder = { Text("Ara: yapay zeka, ekonomi, apple…") },
+
+
+
                 trailingIcon = {
                     Row {
                         if (query.isNotBlank()) {

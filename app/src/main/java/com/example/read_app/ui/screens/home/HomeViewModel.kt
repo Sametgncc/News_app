@@ -109,11 +109,12 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     fun onSearch() {
         val q = state.value.query.trim()
         if (q.isBlank()) return
+        val lang = state.value.language
 
         viewModelScope.launch {
             _state.update { it.copy(isRefreshing = true, errorMessage = null) }
 
-            runCatching { useCases.searchEverything(q, "tr") }
+            runCatching { useCases.searchEverything(q, lang) }
                 .onSuccess {
                     syncPrefs.setLastSync()
                     _state.update { it.copy(isRefreshing = false) }
@@ -124,9 +125,15 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+
     fun onClearSearch() {
         _state.update { it.copy(query = "") }
         onRefresh()
     }
+
+    fun onLanguageChange(lang: String) {
+        _state.update { it.copy(language = lang) }
+    }
+
 
 }
