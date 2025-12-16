@@ -7,12 +7,6 @@ import com.example.read_app.data.local.entity.ArticleEntity
 import com.example.read_app.data.remote.dto.ArticleDto
 import com.example.read_app.domain.model.Article
 
-/**
- * Mapper: Data katmanındaki modelleri (Entity) Domain modeline (Article) çevirir.
- * Böylece UI/UseCase tarafı Room detaylarını bilmez.
- */
-
-
 fun ArticleDto.toEntity(
     bookmarkedIds: Set<String>
 ): ArticleEntity {

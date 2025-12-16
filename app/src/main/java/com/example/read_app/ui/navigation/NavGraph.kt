@@ -1,6 +1,5 @@
 package com.example.read_app.ui.navigation
 
-
 import android.app.Application
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -12,6 +11,7 @@ import androidx.navigation.navArgument
 import com.example.read_app.ui.screens.detail.DetailScreen
 import com.example.read_app.ui.screens.home.HomeScreen
 import com.example.read_app.ui.screens.saved.SavedScreen
+import com.example.read_app.ui.screens.search.SearchScreen
 
 @Composable
 fun AppNavGraph(
@@ -29,7 +29,18 @@ fun AppNavGraph(
             HomeScreen(
                 application = application,
                 onOpenDetail = { id -> navController.navigate(Routes.detail(id)) },
-                onOpenSaved = { navController.navigate(Routes.SAVED) }
+                onOpenSaved = { navController.navigate(Routes.SAVED) },
+                onOpenSearch = {
+                    navController.navigate(Routes.SEARCH)
+                }
+            )
+        }
+
+        composable(Routes.SEARCH) {
+            SearchScreen(
+                application = application,
+                onOpenDetail = { id -> navController.navigate(Routes.detail(id)) },
+                onBack = { navController.popBackStack() }
             )
         }
 

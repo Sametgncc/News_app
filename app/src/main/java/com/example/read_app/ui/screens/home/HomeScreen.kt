@@ -3,9 +3,9 @@ package com.example.read_app.ui.screens.home
 import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,7 +19,8 @@ import com.example.read_app.ui.components.ArticleCard
 fun HomeScreen(
     application: Application,
     onOpenDetail: (String) -> Unit,
-    onOpenSaved: () -> Unit
+    onOpenSaved: () -> Unit,
+    onOpenSearch: () -> Unit
 ) {
     val viewModel = remember { HomeViewModel(application) }
     val state: HomeState by viewModel.state.collectAsState(initial = HomeState())
@@ -30,6 +31,10 @@ fun HomeScreen(
         TopAppBar(
             title = { Text("Haberler") },
             actions = {
+                // Arama butonu eklendi (Search Screen'e gitmek için)
+                IconButton(onClick = onOpenSearch) {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "Ara")
+                }
                 TextButton(onClick = onOpenSaved) { Text("Kaydedilenler") }
                 TextButton(onClick = {
                     viewModel.onRefresh()
@@ -38,7 +43,6 @@ fun HomeScreen(
             }
         )
         
-        // Kategori Listesi
         CategoryTabs(
             selectedCategory = state.selectedCategory,
             onCategorySelected = {
@@ -47,23 +51,16 @@ fun HomeScreen(
             }
         )
 
-        SearchBarCard(
-            query = state.query,
-            lastSyncText = state.lastSyncText,
-            language = state.language,
-            onLanguageChange = viewModel::onLanguageChange,
-            onQueryChange = viewModel::onQueryChange,
-            onSearch = {
-                viewModel.onSearch()
-                items.refresh()
-            },
-            onClear = {
-                viewModel.onClearSearch()
-                items.refresh()
-            }
-        )
 
-        // Üstte ince progress
+        Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+             Text(
+                text = "Son senkron: ${state.lastSyncText}",
+                style = MaterialTheme.typography.labelSmall,
+                modifier = Modifier.align(Alignment.CenterEnd)
+            )
+        }
+
+
         if (state.isRefreshing) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
@@ -118,7 +115,7 @@ fun HomeScreen(
                             .padding(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Sonuç yok. Farklı bir arama deneyebilirsin.")
+                        Text("Sonuç yok. Farklı bir kategori seçmeyi deneyin.")
                     }
                 }
             }
@@ -132,7 +129,7 @@ fun CategoryTabs(
     onCategorySelected: (String?) -> Unit
 ) {
     val categories = listOf(
-        null to "Genel",
+        null to "Manşetler",
         "business" to "Ekonomi",
         "entertainment" to "Eğlence",
         "health" to "Sağlık",
@@ -158,65 +155,6 @@ fun CategoryTabs(
     }
 }
 
-@Composable
-private fun SearchBarCard(
-    query: String,
-    lastSyncText: String,
-    language: String,
-    onLanguageChange: (String) -> Unit,
-    onQueryChange: (String) -> Unit,
-    onSearch: () -> Unit,
-    onClear: () -> Unit
-) {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp, vertical = 10.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Column(modifier = Modifier.padding(12.dp)) {
-
-            // ✅ Dil seçimi (TR / EN)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilterChip(
-                    selected = language == "tr",
-                    onClick = { onLanguageChange("tr") },
-                    label = { Text("TR") }
-                )
-                FilterChip(
-                    selected = language == "en",
-                    onClick = { onLanguageChange("en") },
-                    label = { Text("EN") }
-                )
-            }
-
-            Spacer(Modifier.height(10.dp))
-
-            OutlinedTextField(
-                value = query,
-                onValueChange = onQueryChange,
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-                placeholder = { Text("Ara: yapay zeka, ekonomi, apple…") },
-                trailingIcon = {
-                    Row {
-                        if (query.isNotBlank()) {
-                            TextButton(onClick = onClear) { Text("Temizle") }
-                        }
-                        TextButton(onClick = onSearch) { Text("Ara") }
-                    }
-                }
-            )
-
-            Spacer(Modifier.height(8.dp))
-
-            Text(
-                text = "Son senkron: $lastSyncText",
-                style = MaterialTheme.typography.labelSmall
-            )
-        }
-    }
-}
 
 @Composable
 private fun LoadingRow() {

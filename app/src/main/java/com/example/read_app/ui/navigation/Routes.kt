@@ -6,6 +6,7 @@ object Routes {
     const val SAVED = "saved"
     const val DETAIL = "detail"
     const val DETAIL_ARG_ID = "id"
+    const val SEARCH = "search"
 
     fun detail(id: String) = "$DETAIL/$id"
 }

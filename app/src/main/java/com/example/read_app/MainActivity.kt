@@ -21,26 +21,32 @@ import com.example.read_app.worker.NewsSyncWorker
 
 
 class MainActivity : ComponentActivity() {
-//    private fun scheduleNewsSync() {
-//        val constraints = Constraints.Builder()
-//            .setRequiredNetworkType(NetworkType.CONNECTED)
-//            .build()
-//
-//        val request = PeriodicWorkRequestBuilder<NewsSyncWorker>(6, TimeUnit.HOURS)
-//            .setConstraints(constraints)
-//            .build()
-//
-//        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-//            "news_sync",
-//            ExistingPeriodicWorkPolicy.KEEP, // varsa yeniden oluşturma
-//            request
-//        )
-//    }
+    private fun scheduleNewsSync() {
+        // Sadece internet bağlantısı olduğunda çalışsın
+        val constraints = Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
+            .build()
+
+        // 6 saatte bir tekrar etsin
+        val request = PeriodicWorkRequestBuilder<NewsSyncWorker>(6, TimeUnit.HOURS)
+            .setConstraints(constraints)
+            .build()
+
+        // Görevi sıraya koy (Eğer zaten varsa güncelleme - KEEP)
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "news_sync",
+            ExistingPeriodicWorkPolicy.KEEP, 
+            request
+        )
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        //scheduleNewsSync()
+        
+        // Arka plan senkronizasyonunu başlat
+        scheduleNewsSync()
+        
         setContent {
             Read_AppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
