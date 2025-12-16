@@ -3,9 +3,7 @@ package com.example.read_app.domain.usecase
 import com.example.read_app.domain.repository.NewsRepository
 
 
-/**
- * Haber kaydet / kaydı kaldır (bookmark toggle).
- */
+// haber kaydı ve silme için
 class ToggleBookmarkUseCase(
     private val repository: NewsRepository
 ) {

@@ -73,7 +73,8 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             _state.update { it.copy(isRefreshing = true, errorMessage = null) }
 
-            runCatching { useCases.refreshTopHeadlines() }
+            val category = state.value.selectedCategory
+            runCatching { useCases.refreshTopHeadlines(category) }
                 .onSuccess {
                     syncPrefs.setLastSync()
                     _state.update { it.copy(isRefreshing = false) }
@@ -88,6 +89,14 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                 }
         }
     }
+
+    fun onCategoryChange(category: String?) {
+        if (state.value.selectedCategory == category) return
+
+        _state.update { it.copy(selectedCategory = category, query = "") }
+        onRefresh()
+    }
+
 
     fun onToggleBookmark(articleId: String) {
         viewModelScope.launch {
@@ -111,6 +120,9 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         if (q.isBlank()) return
         val lang = state.value.language
 
+
+        _state.update { it.copy(selectedCategory = null) }
+
         viewModelScope.launch {
             _state.update { it.copy(isRefreshing = true, errorMessage = null) }
 
@@ -128,12 +140,10 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     fun onClearSearch() {
         _state.update { it.copy(query = "") }
-        onRefresh()
+        onRefresh() // Mevcut kategoriye geri döner
     }
 
     fun onLanguageChange(lang: String) {
         _state.update { it.copy(language = lang) }
     }
-
-
 }

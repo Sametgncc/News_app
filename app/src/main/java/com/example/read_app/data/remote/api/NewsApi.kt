@@ -15,5 +15,12 @@ interface NewsApi {
         @Query("apiKey") apiKey: String
     ): NewsResponseDto
 
-
+    @GET("v2/top-headlines")
+    suspend fun getTopHeadlines(
+        @Query("category") category: String?,
+        @Query("country") country: String,
+        @Query("pageSize") pageSize: Int,
+        @Query("page") page: Int,
+        @Query("apiKey") apiKey: String
+    ): NewsResponseDto
 }

@@ -3,19 +3,16 @@ package com.example.read_app.ui.screens.home
 import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.semantics.SemanticsProperties.ImeAction
-
 import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.read_app.ui.components.ArticleCard
-
-
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,6 +37,15 @@ fun HomeScreen(
                 }) { Text("Yenile") }
             }
         )
+        
+        // Kategori Listesi
+        CategoryTabs(
+            selectedCategory = state.selectedCategory,
+            onCategorySelected = {
+                viewModel.onCategoryChange(it)
+                items.refresh()
+            }
+        )
 
         SearchBarCard(
             query = state.query,
@@ -56,7 +62,6 @@ fun HomeScreen(
                 items.refresh()
             }
         )
-
 
         // Üstte ince progress
         if (state.isRefreshing) {
@@ -122,6 +127,38 @@ fun HomeScreen(
 }
 
 @Composable
+fun CategoryTabs(
+    selectedCategory: String?,
+    onCategorySelected: (String?) -> Unit
+) {
+    val categories = listOf(
+        null to "Genel",
+        "business" to "Ekonomi",
+        "entertainment" to "Eğlence",
+        "health" to "Sağlık",
+        "science" to "Bilim",
+        "sports" to "Spor",
+        "technology" to "Teknoloji"
+    )
+
+    ScrollableTabRow(
+        selectedTabIndex = categories.indexOfFirst { it.first == selectedCategory },
+        edgePadding = 16.dp,
+        containerColor = MaterialTheme.colorScheme.surface,
+        contentColor = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        categories.forEachIndexed { index, (key, title) ->
+            Tab(
+                selected = (key == selectedCategory),
+                onClick = { onCategorySelected(key) },
+                text = { Text(title) }
+            )
+        }
+    }
+}
+
+@Composable
 private fun SearchBarCard(
     query: String,
     lastSyncText: String,
@@ -161,9 +198,6 @@ private fun SearchBarCard(
                 modifier = Modifier.fillMaxWidth(),
                 singleLine = true,
                 placeholder = { Text("Ara: yapay zeka, ekonomi, apple…") },
-
-
-
                 trailingIcon = {
                     Row {
                         if (query.isNotBlank()) {

@@ -12,7 +12,7 @@ interface NewsRepository {
 
     suspend fun getById(id: String): Article?
 
-    suspend fun refreshTopHeadlines()
+    suspend fun refreshTopHeadlines(category: String? = null)
     suspend fun toggleBookmark(id: String)
 
     fun pagedAll(): Flow<PagingData<Article>>
