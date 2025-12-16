@@ -6,11 +6,13 @@ import android.speech.tts.UtteranceProgressListener
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.read_app.core.di.AppModule
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.util.Locale
 
 class DetailViewModel(
@@ -33,9 +35,34 @@ class DetailViewModel(
     private fun load() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, errorMessage = null) }
-            val article = repo.getById(articleId)
+            
+            // 1. Önce veritabanındaki mevcut hali getir ve göster (Hız için)
+            var article = repo.getById(articleId)
+            
             _state.update {
                 it.copy(isLoading = false, article = article, errorMessage = if (article == null) "Haber bulunamadı" else null)
+            }
+
+            // 2. Eğer içerik yoksa veya çok kısaysa (API genelde 200 char sınır koyar) tam metni çekmeyi dene
+            if (article != null && !article.url.isNullOrBlank()) {
+                val currentLength = article.content?.length ?: 0
+                
+                // Eğer içerik 500 karakterden azsa, muhtemelen tam metin değildir.
+                if (currentLength < 500) {
+                    // Arka planda tam içeriği çek
+                    val fullContent = repo.fetchFullContent(article.url!!)
+                    
+                    if (!fullContent.isNullOrBlank() && fullContent.length > currentLength) {
+                        // 3. Yeni içerikle makaleyi güncelle
+                        val updatedArticle = article.copy(content = fullContent)
+                        
+                        // Veritabanına kaydet
+                        repo.update(updatedArticle)
+                        
+                        // UI'ı güncelle
+                        _state.update { it.copy(article = updatedArticle) }
+                    }
+                }
             }
         }
     }
@@ -79,15 +106,14 @@ class DetailViewModel(
         val article = state.value.article ?: return
 
         if (state.value.isSpeaking) {
-            // Durdur
             tts?.stop()
             _state.update { it.copy(isSpeaking = false) }
         } else {
-            // Oku
             val textToRead = buildString {
                 append(article.title)
                 append(". ")
                 article.description?.let { append(it).append(". ") }
+                // Eğer tam içerik çekildiyse onu okur
                 article.content?.let { append(it) }
             }
             

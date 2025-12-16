@@ -15,6 +15,9 @@ import androidx.paging.PagingData
 import androidx.paging.map
 import android.util.Log
 import com.example.read_app.BuildConfig
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.jsoup.Jsoup
 
 class NewsRepositoryImpl(
     private val dao: ArticleDao,
@@ -97,6 +100,20 @@ class NewsRepositoryImpl(
         val current = dao.getById(id) ?: return
         dao.update(current.copy(isBookmarked = !current.isBookmarked))
     }
+    
+    override suspend fun update(article: Article) {
+        val existing = dao.getById(article.id)
+        if (existing != null) {
+              val updatedEntity = existing.copy(
+                 content = article.content, // Scraping ile gelen uzun metin
+
+             )
+             dao.update(updatedEntity)
+             Log.d("REPO_UPDATE", "Haber güncellendi: ${article.title.take(20)}... Yeni içerik uzunluğu: ${article.content?.length}")
+        } else {
+            Log.e("REPO_UPDATE", "Güncellenecek haber bulunamadı ID: ${article.id}")
+        }
+    }
 
     override fun pagedAll(): Flow<PagingData<Article>> {
         return Pager(
@@ -114,6 +131,41 @@ class NewsRepositoryImpl(
             pagingSourceFactory = { dao.pagingSourceBookmarked() }
         ).flow.map { pagingData ->
             pagingData.map { it.toDomain() }
+        }
+    }
+    
+    override suspend fun fetchFullContent(url: String): String? {
+        return withContext(Dispatchers.IO) {
+            try {
+                Log.d("JSOUP", "Bağlanılıyor: $url")
+                val doc = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                    .timeout(10000)
+                    .get()
+                
+                var elements = doc.select("article p")
+                
+                if (elements.isEmpty()) {
+                    elements = doc.select("p")
+                }
+
+                val sb = StringBuilder()
+                for (el in elements) {
+                    val text = el.text().trim()
+                    if (text.length > 50 && !text.contains("copyright", ignoreCase = true)) {
+                        sb.append(text).append("\n\n")
+                    }
+                }
+                
+                val result = sb.toString()
+                Log.d("JSOUP", "İçerik çekildi. Uzunluk: ${result.length}")
+                
+                if (result.isEmpty()) null else result
+                
+            } catch (e: Exception) {
+                Log.e("JSOUP_ERROR", "Error fetching content: ${e.message}")
+                null
+            }
         }
     }
 }

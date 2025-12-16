@@ -14,6 +14,9 @@ interface NewsRepository {
 
     suspend fun refreshTopHeadlines(category: String? = null)
     suspend fun toggleBookmark(id: String)
+    
+    // Yeni: Tek bir makaleyi güncellemek için
+    suspend fun update(article: Article)
 
     fun pagedAll(): Flow<PagingData<Article>>
 
@@ -21,5 +24,5 @@ interface NewsRepository {
 
     suspend fun search(query: String, language: String = "tr")
 
-
+    suspend fun fetchFullContent(url: String): String?
 }
