@@ -12,6 +12,7 @@ import com.example.read_app.ui.screens.detail.DetailScreen
 import com.example.read_app.ui.screens.home.HomeScreen
 import com.example.read_app.ui.screens.saved.SavedScreen
 import com.example.read_app.ui.screens.search.SearchScreen
+import com.example.read_app.ui.screens.settings.SettingsScreen
 
 @Composable
 fun AppNavGraph(
@@ -30,9 +31,8 @@ fun AppNavGraph(
                 application = application,
                 onOpenDetail = { id -> navController.navigate(Routes.detail(id)) },
                 onOpenSaved = { navController.navigate(Routes.SAVED) },
-                onOpenSearch = {
-                    navController.navigate(Routes.SEARCH)
-                }
+                onOpenSearch = { navController.navigate(Routes.SEARCH) },
+                onOpenSettings = { navController.navigate(Routes.SETTINGS) }
             )
         }
 
@@ -48,6 +48,13 @@ fun AppNavGraph(
             SavedScreen(
                 application = application,
                 onOpenDetail = { id -> navController.navigate(Routes.detail(id)) },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Routes.SETTINGS) {
+            SettingsScreen(
+                application = application,
                 onBack = { navController.popBackStack() }
             )
         }

@@ -3,9 +3,10 @@ package com.example.read_app.ui.screens.home
 import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material3.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,7 +21,8 @@ fun HomeScreen(
     application: Application,
     onOpenDetail: (String) -> Unit,
     onOpenSaved: () -> Unit,
-    onOpenSearch: () -> Unit
+    onOpenSearch: () -> Unit,
+    onOpenSettings: () -> Unit
 ) {
     val viewModel = remember { HomeViewModel(application) }
     val state: HomeState by viewModel.state.collectAsState(initial = HomeState())
@@ -31,15 +33,13 @@ fun HomeScreen(
         TopAppBar(
             title = { Text("Haberler") },
             actions = {
-                // Arama butonu eklendi (Search Screen'e gitmek için)
                 IconButton(onClick = onOpenSearch) {
                     Icon(imageVector = Icons.Default.Search, contentDescription = "Ara")
                 }
+                IconButton(onClick = onOpenSettings) {
+                    Icon(imageVector = Icons.Default.Settings, contentDescription = "Ayarlar")
+                }
                 TextButton(onClick = onOpenSaved) { Text("Kaydedilenler") }
-                TextButton(onClick = {
-                    viewModel.onRefresh()
-                    items.refresh()
-                }) { Text("Yenile") }
             }
         )
         
@@ -51,7 +51,6 @@ fun HomeScreen(
             }
         )
 
-
         Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
              Text(
                 text = "Son senkron: ${state.lastSyncText}",
@@ -60,17 +59,14 @@ fun HomeScreen(
             )
         }
 
-
         if (state.isRefreshing) {
             LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
         }
 
-        // Hata mesajı
         state.errorMessage?.let { msg ->
             ErrorBar(message = msg, onDismiss = viewModel::consumeError)
         }
 
-        // Liste
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp),
@@ -87,7 +83,6 @@ fun HomeScreen(
                 }
             }
 
-            // İlk yükleme (refresh)
             item {
                 when (val refresh = items.loadState.refresh) {
                     is LoadState.Loading -> LoadingRow()
@@ -96,7 +91,6 @@ fun HomeScreen(
                 }
             }
 
-            // Devamı (append)
             item {
                 when (val append = items.loadState.append) {
                     is LoadState.Loading -> LoadingRow()
@@ -105,7 +99,6 @@ fun HomeScreen(
                 }
             }
 
-            // Boş ekran
             item {
                 val isEmpty = items.itemCount == 0 && items.loadState.refresh !is LoadState.Loading
                 if (isEmpty) {

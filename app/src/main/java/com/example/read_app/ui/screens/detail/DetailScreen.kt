@@ -7,6 +7,9 @@ import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.filled.VolumeUp
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -64,6 +67,7 @@ fun DetailScreen(
                         .padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
+                    // Görsel
                     if (!a.imageUrl.isNullOrBlank()) {
                         AsyncImage(
                             model = a.imageUrl,
@@ -93,18 +97,55 @@ fun DetailScreen(
                         Text(a.content!!, style = MaterialTheme.typography.bodyMedium)
                     }
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceEvenly // Eşit dağılım
+                    ) {
+                        IconButton(onClick = vm::toggleSpeaking) {
+                            Icon(
+                                imageVector = if (state.isSpeaking) Icons.Default.Stop else Icons.Default.VolumeUp,
+                                contentDescription = if (state.isSpeaking) "Durdur" else "Dinle",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+
                         Button(onClick = vm::toggleBookmark) {
-                            Text(if (a.isBookmarked) "Kaydı Kaldır" else "Kaydet")
+                            Text(if (a.isBookmarked) "Kaldır" else "Kaydet")
                         }
 
                         if (!a.url.isNullOrBlank()) {
                             OutlinedButton(onClick = {
                                 val url = a.url?.trim().orEmpty()
+                                if (url.isBlank()) {
+                                    Toast.makeText(context, "Paylaşılacak link yok.", Toast.LENGTH_SHORT).show()
+                                    return@OutlinedButton
+                                }
+                                val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                                    type = "text/plain"
+                                    putExtra(Intent.EXTRA_SUBJECT, a.title)
+                                    putExtra(Intent.EXTRA_TEXT, "$url")
+                                }
+                                try {
+                                    context.startActivity(Intent.createChooser(shareIntent, "Paylaş"))
+                                } catch (e: Exception) {
+                                    Toast.makeText(context, "Hata", Toast.LENGTH_SHORT).show()
+                                }
+                            }) {
+                                Text("Paylaş")
+                            }
+                        }
+                    }
+                    
+                    if (!a.url.isNullOrBlank()) {
+                        OutlinedButton(
+                            onClick = {
+                                val url = a.url?.trim().orEmpty()
                                 if (url.isNotBlank()) {
                                     val fixedUrl =
                                         if (url.startsWith("http")) url else "https://$url"
 
+                                    // Chrome Custom Tabs ile aç
                                     try {
                                         val builder = CustomTabsIntent.Builder()
                                         val customTabsIntent = builder.build()
@@ -118,35 +159,10 @@ fun DetailScreen(
                                         }
                                     }
                                 }
-                            }) {
-                                Text("Tarayıcıda Aç")
-                            }
-                        }
-                    }
-
-                    if (!a.url.isNullOrBlank()) {
-                        OutlinedButton(onClick = {
-                            val url = a.url?.trim().orEmpty()
-                            if (url.isBlank()) {
-                                Toast.makeText(context, "Paylaşılacak link yok.", Toast.LENGTH_SHORT).show()
-                                return@OutlinedButton
-                            }
-
-                            val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                                type = "text/plain"
-                                putExtra(Intent.EXTRA_SUBJECT, a.title)
-                                putExtra(Intent.EXTRA_TEXT, url)
-                            }
-
-                            try {
-                                context.startActivity(Intent.createChooser(shareIntent, "Paylaş"))
-                            } catch (e: ActivityNotFoundException) {
-                                Toast.makeText(context, "Paylaşım için uygun uygulama bulunamadı.", Toast.LENGTH_SHORT).show()
-                            } catch (e: Exception) {
-                                Toast.makeText(context, "Paylaşım açılamadı: ${e.message}", Toast.LENGTH_SHORT).show()
-                            }
-                        }) {
-                            Text("Paylaş")
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text("Tarayıcıda Oku")
                         }
                     }
                 }

@@ -18,21 +18,21 @@ import androidx.work.NetworkType
 import androidx.work.WorkManager
 import java.util.concurrent.TimeUnit
 import com.example.read_app.worker.NewsSyncWorker
+import com.example.read_app.core.di.AppModule
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 
 
 class MainActivity : ComponentActivity() {
     private fun scheduleNewsSync() {
-        // Sadece internet bağlantısı olduğunda çalışsın
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
 
-        // 6 saatte bir tekrar etsin
         val request = PeriodicWorkRequestBuilder<NewsSyncWorker>(6, TimeUnit.HOURS)
             .setConstraints(constraints)
             .build()
 
-        // Görevi sıraya koy (Eğer zaten varsa güncelleme - KEEP)
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             "news_sync",
             ExistingPeriodicWorkPolicy.KEEP, 
@@ -43,12 +43,14 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        
-        // Arka plan senkronizasyonunu başlat
         scheduleNewsSync()
         
+        val syncPrefs = AppModule.provideSyncPrefs(applicationContext)
+
         setContent {
-            Read_AppTheme {
+            val isDarkTheme by syncPrefs.isDarkTheme.collectAsState(initial = false)
+
+            Read_AppTheme(darkTheme = isDarkTheme) {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Box(modifier = Modifier.padding(innerPadding)
                     )

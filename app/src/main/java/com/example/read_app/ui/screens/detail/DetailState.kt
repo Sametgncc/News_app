@@ -6,5 +6,6 @@ import com.example.read_app.domain.model.Article
 data class DetailState(
     val isLoading: Boolean = true,
     val article: Article? = null,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val isSpeaking: Boolean = false
 )

@@ -94,7 +94,11 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
     implementation(libs.coil.compose)
     
+    // Chrome Custom Tabs
     implementation("androidx.browser:browser:1.8.0")
+    
+    // Jsoup (Web Scraping için)
+    implementation("org.jsoup:jsoup:1.17.2")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

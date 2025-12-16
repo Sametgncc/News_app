@@ -25,8 +25,6 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repository = AppModule.provideNewsRepository(app.applicationContext)
 
-    // Arama sonuçları da yine veritabanından gelecek
-    // Ancak sadece arama yapıldığında tetiklenecek
     val pagingFlow: Flow<PagingData<Article>> = repository.pagedAll()
 
     private val useCases = NewsUseCases(
@@ -46,7 +44,7 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
 
         searchJob?.cancel()
         searchJob = viewModelScope.launch {
-            delay(800L) // Biraz daha uzun debounce
+            delay(800L)
             if (text.isNotBlank()) {
                 performSearch(text)
             }
@@ -56,7 +54,6 @@ class SearchViewModel(app: Application) : AndroidViewModel(app) {
     private suspend fun performSearch(query: String) {
         _state.update { it.copy(isLoading = true, errorMessage = null) }
         try {
-            // Veritabanını silip yeni arama sonucunu kaydeder
             useCases.searchEverything(query, Constants.DEFAULT_COUNTRY)
             _state.update { it.copy(isLoading = false) }
         } catch (e: Exception) {

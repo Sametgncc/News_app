@@ -7,6 +7,7 @@ object Routes {
     const val DETAIL = "detail"
     const val DETAIL_ARG_ID = "id"
     const val SEARCH = "search"
+    const val SETTINGS = "settings"
 
     fun detail(id: String) = "$DETAIL/$id"
 }
