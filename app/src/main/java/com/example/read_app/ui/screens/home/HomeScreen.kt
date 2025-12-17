@@ -27,6 +27,12 @@ fun HomeScreen(
     val viewModel = remember { HomeViewModel(application) }
     val state: HomeState by viewModel.state.collectAsState(initial = HomeState())
     val items = viewModel.pagingFlow.collectAsLazyPagingItems()
+    
+    LaunchedEffect(state.selectedCategory) {
+        if (items.itemCount > 0) {
+
+        }
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
 
@@ -47,7 +53,7 @@ fun HomeScreen(
             selectedCategory = state.selectedCategory,
             onCategorySelected = {
                 viewModel.onCategoryChange(it)
-                items.refresh()
+
             }
         )
 
@@ -108,7 +114,8 @@ fun HomeScreen(
                             .padding(24.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("Sonuç yok. Farklı bir kategori seçmeyi deneyin.")
+
+                        Text("Sonuç yok veya yükleniyor...")
                     }
                 }
             }

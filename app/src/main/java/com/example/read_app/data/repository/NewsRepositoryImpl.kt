@@ -45,11 +45,14 @@ class NewsRepositoryImpl(
             apiKey = apiKey
         )
 
-        if ((response.articles.isNullOrEmpty()) && category != null) {
-            Log.d("NEWS_REFRESH", "TopHeadlines boş döndü, SearchEverything deneniyor: $category")
+        if (response.articles.isNullOrEmpty()) {
+            val query = category ?: "Gündem"
+            
+            Log.d("NEWS_REFRESH", "TopHeadlines boş (cat=$category), SearchEverything deneniyor: q=$query")
+            
             response = api.searchEverything(
-                q = category,
-                language = Constants.DEFAULT_COUNTRY, // "tr"
+                q = query,
+                language = Constants.DEFAULT_COUNTRY,
                 pageSize = Constants.PAGE_SIZE,
                 page = 1,
                 apiKey = apiKey
@@ -61,14 +64,13 @@ class NewsRepositoryImpl(
         val entities = (response.articles ?: emptyList())
             .map { it.toEntity(bookmarkedIds) }
 
+        dao.deleteNonBookmarked()
+        dao.deleteSeedArticles()
 
         if (entities.isNotEmpty()) {
-            dao.deleteNonBookmarked()
-            dao.deleteSeedArticles()
             dao.upsertAll(entities)
         } else {
-            Log.w("NEWS_REFRESH", "API'den hiç veri gelmedi, mevcut veriler korunuyor.")
-
+            Log.w("NEWS_REFRESH", "API'den hiç veri alınamadı.")
         }
     }
 
@@ -89,9 +91,10 @@ class NewsRepositoryImpl(
         val entities = (response.articles ?: emptyList())
             .map { it.toEntity(bookmarkedIds) }
 
+        dao.deleteNonBookmarked()
+        dao.deleteSeedArticles()
+
         if (entities.isNotEmpty()) {
-            dao.deleteNonBookmarked()
-            dao.deleteSeedArticles()
             dao.upsertAll(entities)
         }
     }
@@ -104,14 +107,13 @@ class NewsRepositoryImpl(
     override suspend fun update(article: Article) {
         val existing = dao.getById(article.id)
         if (existing != null) {
-              val updatedEntity = existing.copy(
-                 content = article.content, // Scraping ile gelen uzun metin
-
+             val updatedEntity = existing.copy(
+                 content = article.content,
+                 title = article.title,
+                 description = article.description
              )
              dao.update(updatedEntity)
-             Log.d("REPO_UPDATE", "Haber güncellendi: ${article.title.take(20)}... Yeni içerik uzunluğu: ${article.content?.length}")
-        } else {
-            Log.e("REPO_UPDATE", "Güncellenecek haber bulunamadı ID: ${article.id}")
+             Log.d("REPO_UPDATE", "Haber güncellendi ID: ${article.id}")
         }
     }
 
@@ -144,26 +146,23 @@ class NewsRepositoryImpl(
                     .get()
                 
                 var elements = doc.select("article p")
-                
                 if (elements.isEmpty()) {
-                    elements = doc.select("p")
+                    elements = doc.select("div.content p, div.body p, p")
                 }
 
-                val sb = StringBuilder()
+                val sb = StringBuilder ()
                 for (el in elements) {
                     val text = el.text().trim()
-                    if (text.length > 50 && !text.contains("copyright", ignoreCase = true)) {
+                    if (text.length > 40 && !text.contains("copyright", ignoreCase = true)) {
                         sb.append(text).append("\n\n")
                     }
                 }
                 
                 val result = sb.toString()
-                Log.d("JSOUP", "İçerik çekildi. Uzunluk: ${result.length}")
-                
                 if (result.isEmpty()) null else result
                 
             } catch (e: Exception) {
-                Log.e("JSOUP_ERROR", "Error fetching content: ${e.message}")
+                Log.e("JSOUP_ERROR", "Error: ${e.message}")
                 null
             }
         }

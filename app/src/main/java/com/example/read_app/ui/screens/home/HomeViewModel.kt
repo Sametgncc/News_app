@@ -1,6 +1,7 @@
 package com.example.read_app.ui.screens.home
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.paging.PagingData
@@ -74,12 +75,16 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
             _state.update { it.copy(isRefreshing = true, errorMessage = null) }
 
             val category = state.value.selectedCategory
+            Log.d("HOME_VM", "Yenileniyor. Kategori: $category")
+            
             runCatching { useCases.refreshTopHeadlines(category) }
                 .onSuccess {
                     syncPrefs.setLastSync()
                     _state.update { it.copy(isRefreshing = false) }
+                    Log.d("HOME_VM", "Yenileme başarılı.")
                 }
                 .onFailure { e ->
+                    Log.e("HOME_VM", "Yenileme hatası: ${e.message}")
                     _state.update {
                         it.copy(
                             isRefreshing = false,
@@ -91,6 +96,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun onCategoryChange(category: String?) {
+        Log.d("HOME_VM", "Kategori değiştir isteği: $category, Mevcut: ${state.value.selectedCategory}")
         if (state.value.selectedCategory == category) return
 
         _state.update { it.copy(selectedCategory = category, query = "") }
@@ -140,7 +146,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     fun onClearSearch() {
         _state.update { it.copy(query = "") }
-        onRefresh() // Mevcut kategoriye geri döner
+        onRefresh() 
     }
 
     fun onLanguageChange(lang: String) {
