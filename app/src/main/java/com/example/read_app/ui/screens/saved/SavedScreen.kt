@@ -3,6 +3,8 @@ package com.example.read_app.ui.screens.saved
 import android.app.Application
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBackIosNew
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,7 +28,7 @@ fun SavedScreen(
         TopAppBar(
             title = { Text("Kaydedilenler") },
             navigationIcon = {
-                TextButton(onClick = onBack) { Text("Geri") }
+               IconButton(onClick = onBack) {Icon(Icons.Default.ArrowBackIosNew, contentDescription = "Geri")}
             }
         )
 
@@ -41,7 +43,7 @@ fun SavedScreen(
                     ArticleCard(
                         article = article,
                         onClick = { onOpenDetail(article.id) },
-                        onToggleBookmark = { vm.onToggleBookmark(article.id) } // ✅ kaydı kaldır
+                        onToggleBookmark = { vm.onToggleBookmark(article.id) } // kaydı kaldırmak için yazdım
                     )
                 }
             }

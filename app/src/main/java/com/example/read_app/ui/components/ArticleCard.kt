@@ -40,7 +40,7 @@ fun ArticleCard(
                 .padding(12.dp),
             verticalAlignment = Alignment.Top
         ) {
-            // Thumbnail
+
             if (!article.imageUrl.isNullOrBlank()) {
                 AsyncImage(
                     model = article.imageUrl,
