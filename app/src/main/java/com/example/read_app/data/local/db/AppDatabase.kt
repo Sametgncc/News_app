@@ -8,7 +8,7 @@ import com.example.read_app.data.local.entity.ArticleEntity
 
 @Database(
     entities = [ArticleEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -18,6 +18,7 @@ data class ArticleEntity(
     val publishedAtEpochMs: Long?,
 
     val isBookmarked: Boolean = false,
+    val clickCount: Int = 0,
 
     val cachedAtEpochMs: Long = System.currentTimeMillis()
 )

@@ -34,7 +34,9 @@ object AppModule {
                 context.applicationContext,
                 AppDatabase::class.java,
                 "read_app.db"
-            ).build().also { db = it }
+            )
+            .fallbackToDestructiveMigration()
+            .build().also { db = it }
         }
     }
 

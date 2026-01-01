@@ -1,6 +1,6 @@
 package com.example.read_app.ui.screens.home
 
-import com.example.read_app.core.util.NewsType // NewsType'ı import et
+import com.example.read_app.core.util.NewsType
 
 data class HomeState(
     val isRefreshing: Boolean = false,
