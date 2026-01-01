@@ -34,13 +34,13 @@ class NewsRepositoryImpl(
     override suspend fun getById(id: String): Article? =
         dao.getById(id)?.toDomain()
 
-    override suspend fun refreshTopHeadlines(category: String?) {
+    override suspend fun refreshTopHeadlines(category: String?, country: String) {
         val apiKey = BuildConfig.NEWS_API_KEY
         val bookmarkedIds = dao.getBookmarkedIds().toSet()
 
         var response = api.getTopHeadlines(
             category = category,
-            country = Constants.DEFAULT_COUNTRY,
+            country = country,
             pageSize = Constants.PAGE_SIZE,
             page = 1,
             apiKey = apiKey
@@ -53,7 +53,7 @@ class NewsRepositoryImpl(
             
             response = api.searchEverything(
                 q = query,
-                language = Constants.DEFAULT_COUNTRY,
+                language = country,
                 pageSize = Constants.PAGE_SIZE,
                 page = 1,
                 apiKey = apiKey

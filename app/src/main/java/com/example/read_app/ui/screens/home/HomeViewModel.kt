@@ -22,6 +22,7 @@ import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
+import com.example.read_app.core.util.NewsType // NewsType'ı import et
 
 class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
@@ -48,6 +49,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
     init {
         seedIfEmpty()
         observeLastSync()
+        // onRefresh() // Uygulama açıldığında ilk veri yüklemesini tetikleyen bu çağrıyı kaldırdık
     }
 
     private fun seedIfEmpty() {
@@ -75,9 +77,10 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
             _state.update { it.copy(isRefreshing = true, errorMessage = null) }
 
             val category = state.value.selectedCategory
-            Log.d("HOME_VM", "Yenileniyor. Kategori: $category")
+            val country = state.value.selectedNewsType.countryCode // Haber türüne göre ülke kodunu al
+            Log.d("HOME_VM", "Yenileniyor. Kategori: $category, Ülke: $country")
             
-            runCatching { useCases.refreshTopHeadlines(category) }
+            runCatching { useCases.refreshTopHeadlines(category, country) } // country parametresini geçir
                 .onSuccess {
                     syncPrefs.setLastSync()
                     _state.update { it.copy(isRefreshing = false) }
@@ -103,6 +106,13 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         onRefresh()
     }
 
+    fun onNewsTypeChange(newsType: NewsType) {
+        Log.d("HOME_VM", "Haber türü değiştir isteği: ${newsType::class.simpleName}, Mevcut: ${state.value.selectedNewsType::class.simpleName}")
+        if (state.value.selectedNewsType == newsType) return
+
+        _state.update { it.copy(selectedNewsType = newsType, selectedCategory = null, query = "") } // Haber türü değişince kategori ve aramayı sıfırla
+        onRefresh()
+    }
 
     fun onToggleBookmark(articleId: String) {
         viewModelScope.launch {

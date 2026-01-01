@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import androidx.paging.LoadState
 import androidx.paging.compose.collectAsLazyPagingItems
 import com.example.read_app.ui.components.ArticleCard
+import com.example.read_app.core.util.NewsType // NewsType'ı import et
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,10 +29,9 @@ fun HomeScreen(
     val state: HomeState by viewModel.state.collectAsState(initial = HomeState())
     val items = viewModel.pagingFlow.collectAsLazyPagingItems()
     
-    LaunchedEffect(state.selectedCategory) {
-        if (items.itemCount > 0) {
-
-        }
+    LaunchedEffect(state.selectedCategory, state.selectedNewsType) {
+        // category veya newsType değiştiğinde Paging verisini yenilemek için tetikleyici
+        items.refresh()
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -56,6 +56,28 @@ fun HomeScreen(
 
             }
         )
+
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            FilterChip(
+                selected = state.selectedNewsType == NewsType.Local,
+                onClick = { viewModel.onNewsTypeChange(NewsType.Local) },
+                label = { Text("Yerel Haberler") },
+                modifier = Modifier.weight(1f)
+            )
+            Spacer(Modifier.width(8.dp))
+            FilterChip(
+                selected = state.selectedNewsType == NewsType.Foreign,
+                onClick = { viewModel.onNewsTypeChange(NewsType.Foreign) },
+                label = { Text("Yabancı Haberler") },
+                modifier = Modifier.weight(1f)
+            )
+        }
 
         Box(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
              Text(
@@ -129,7 +151,7 @@ fun CategoryTabs(
     onCategorySelected: (String?) -> Unit
 ) {
     val categories = listOf(
-        null to "Manşetler",
+        null to "Son Dakika", // "Manşetler" -> "Son Dakika" olarak değiştirildi
         "business" to "Ekonomi",
         "entertainment" to "Eğlence",
         "health" to "Sağlık",

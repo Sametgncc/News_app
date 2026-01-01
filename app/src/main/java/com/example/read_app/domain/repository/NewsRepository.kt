@@ -4,6 +4,7 @@ package com.example.read_app.domain.repository
 import com.example.read_app.domain.model.Article
 import kotlinx.coroutines.flow.Flow
 import androidx.paging.PagingData
+import com.example.read_app.core.util.Constants
 
 
 interface NewsRepository {
@@ -12,7 +13,7 @@ interface NewsRepository {
 
     suspend fun getById(id: String): Article?
 
-    suspend fun refreshTopHeadlines(category: String? = null)
+    suspend fun refreshTopHeadlines(category: String? = null, country: String = Constants.DEFAULT_COUNTRY)
     suspend fun toggleBookmark(id: String)
     
     // Yeni: Tek bir makaleyi güncellemek için
