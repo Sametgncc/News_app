@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.map
 private val Context.syncDataStore by preferencesDataStore(name = "sync_prefs")
 
 class SyncPrefs(private val context: Context) {
-
+    // tercihlerimi yönetmek için kullandığım class
     private val KEY_LAST_SYNC = longPreferencesKey("last_sync_epoch_ms")
     private val KEY_IS_DARK_THEME = booleanPreferencesKey("is_dark_theme")
 

@@ -3,6 +3,7 @@ package com.example.read_app.data.remote.dto
 import com.squareup.moshi.Json
 
 data class ArticleDto(
+    // ağ katmanından gelen haberler için tür dönüşümü sağladım
     @Json(name = "source") val source: SourceDto?,
     @Json(name = "author") val author: String?,
     @Json(name = "title") val title: String?,

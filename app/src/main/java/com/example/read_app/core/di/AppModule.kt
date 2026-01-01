@@ -21,7 +21,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 
 
 object AppModule {
-
+    // tutarlılık sağlamak için
     @Volatile private var db: AppDatabase? = null
     @Volatile private var okHttp: OkHttpClient? = null
     @Volatile private var retrofit: Retrofit? = null
@@ -42,6 +42,7 @@ object AppModule {
         return provideDatabase(context).articleDao()
     }
 
+    // hata ayıklama için yazdım
     fun provideOkHttpClient(): OkHttpClient {
         return okHttp ?: synchronized(this) {
             okHttp ?: run {
@@ -55,7 +56,7 @@ object AppModule {
             }.also { okHttp = it }
         }
     }
-
+    // json verilerilerini kodlin nesnesine dönüştür işlemini yapan kütüphane moshi
     fun provideRetrofit(): Retrofit {
         return retrofit ?: synchronized(this) {
             retrofit ?: run {

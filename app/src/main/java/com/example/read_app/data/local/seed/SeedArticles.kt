@@ -4,6 +4,7 @@ package com.example.read_app.data.local.seed
 import com.example.read_app.data.local.entity.ArticleEntity
 
 object SeedArticles {
+    // test clasım gerçek apiden önce denemeiçin kullandım test clası yani
     fun sample(): List<ArticleEntity> = listOf(
         ArticleEntity(
             id = "seed-1",

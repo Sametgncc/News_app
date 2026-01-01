@@ -5,7 +5,7 @@ import retrofit2.http.GET
 import retrofit2.http.Query
 
 interface NewsApi {
-
+// tercümandır haberler için
     @GET("v2/everything")
     suspend fun searchEverything(
         @Query("q") q: String,

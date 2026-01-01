@@ -19,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jsoup.Jsoup
 
+// uygulamanın ana yönetimi burada gerçekleştirdim çökmemesi için
 class NewsRepositoryImpl(
     private val dao: ArticleDao,
     private val api: NewsApi
